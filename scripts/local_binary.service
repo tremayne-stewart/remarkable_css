@@ -1,0 +1,10 @@
+[Unit]
+Description=Set random images for splash screens
+
+[Service]
+Type=simple
+ExecStart=/home/root/local_binary -logtostderr=true
+After=home.mount
+
+[Install]
+WantedBy=multi-user.target
