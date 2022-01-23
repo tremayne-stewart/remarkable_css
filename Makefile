@@ -3,7 +3,7 @@ host=10.11.99.1
 
 build:
 	go get ./...
-	env GOOS=linux GOARCH=arm GOARM=7 go build -o local_binary
+	env GOOS=linux GOARCH=arm GOARM=7 DEBUG=0 go build -o local_binary
 
 install: build
 	scp local_binary root@$(host):local_binary
