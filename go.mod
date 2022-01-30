@@ -1,4 +1,4 @@
-module uriel/local_binary
+module uriel/remarkable_change_suspend_screen
 
 go 1.17
 

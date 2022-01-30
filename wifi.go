@@ -1,5 +1,24 @@
 package main
 
+// dbus filter for getting WiFi state change from wpa_supplicant
+// see `dbus-monitor --system` and/or run that command on the device.
+/* OUTPUT EXAMPLE:
+	signal time=1642751912.229222 sender=:1.1 -> destination=(null destination) serial=984 path=/org/freedesktop/network1/link/_351; interface=org.freedesktop.DBus.Properties; member=PropertiesChanged
+   string "org.freedesktop.network1.Link"
+   array [
+      dict entry(
+         string "AddressState"
+         variant             string "routable"
+      )
+      dict entry(
+         string "OperationalState"
+         variant             string "routable"
+      )
+   ]
+   array [
+   ]
+*/
+
 import (
 	"os"
 	"strings"
@@ -11,10 +30,11 @@ import (
 func waitForWifi(signalOnline chan bool) {
 	glog.Info("Running waitForWifi")
 
-	// For the sake of def we're going to assume this works
-	glog.Info("wifi connected.")
-	signalOnline <- true
-	return
+	if IS_DEBUG {
+		glog.Info("Bypassing DBUS Check for Wifi")
+		signalOnline <- true
+		return
+	}
 
 	// Use Dbus to wait for wpa_supplicant to emit message that we're connected
 	// example: https://github.com/godbus/dbus/blob/c88335c0b1d28a30e7fc76d526a06154b85e5d97/_examples/monitor.go#L26
@@ -25,27 +45,7 @@ func waitForWifi(signalOnline chan bool) {
 	defer busCon.Close()
 	glog.Info("Connected to system bus.")
 
-	// dbus filter for getting WiFi state change from wpa_supplicant
-	// see `dbus-monitor --system`
-	/*
-			signal time=1642751912.229222 sender=:1.1 -> destination=(null destination) serial=984 path=/org/freedesktop/network1/link/_351; interface=org.freedesktop.DBus.Properties; member=PropertiesChanged
-		   string "org.freedesktop.network1.Link"
-		   array [
-		      dict entry(
-		         string "AddressState"
-		         variant             string "routable"
-		      )
-		      dict entry(
-		         string "OperationalState"
-		         variant             string "routable"
-		      )
-		   ]
-		   array [
-		   ]
-	*/
-	rules := []string{
-		// "interface='org.freedesktop.DBus.Properties', member='PropertiesChanged'",
-	}
+	var rules []string
 	var flags uint = 0
 
 	// First 2 arguments satisfy the library, second 2 satisfy the dbus command

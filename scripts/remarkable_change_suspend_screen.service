@@ -1,0 +1,10 @@
+[Unit]
+Description=Set random images for splash screens
+
+[Service]
+ExecStart=/usr/share/remarkable/scripts/remarkable_change_suspend_screen -logtostderr=true
+Restart=always
+
+
+[Install]
+WantedBy=multi-user.target

@@ -2,9 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io"
-	"os"
 	"strings"
 	"time"
 
@@ -14,21 +12,13 @@ import (
 
 const (
 	TIME_BETWEEN_CHECKS = 3600 // seconds == 1 hour
-	// IMAGE_URL            = "https://i.groupme.com/373x506.png.3553b5442784435885844fc8ff026bba"
-	IMAGE_REFERENCE_URL  = "http://192.168.4.75:3000/get-image"
+	// This URL needs to return a the URL of the image to use as the suspend screen (plain text)
+	IMAGE_REFERENCE_URL  = "https://uriel-rmcss.herokuapp.com/latest-nyt"
 	DEBUG_IMAGE_FILENAME = "./downloaded_image.png"
 	IMAGE_FILENAME       = "/usr/share/remarkable/suspended.png"
 )
 
-var IS_DEBUG bool = true
-
-func configureAccount() {
-	// 1. Check for existing account configuration
-
-	// If non exists, go through the setup proc
-	fmt.Println(generateCode())
-
-}
+var IS_DEBUG bool = false
 
 func runService() {
 	var signalOnline = make(chan bool)
@@ -37,7 +27,7 @@ func runService() {
 	for {
 		<-signalOnline
 
-		if time.Now().Sub(lastCheckTime) > TIME_BETWEEN_CHECKS {
+		if time.Now().Sub(lastCheckTime).Seconds() > TIME_BETWEEN_CHECKS {
 			glog.Info("Downloading Image")
 			urlReader, err := getUrlReader(IMAGE_REFERENCE_URL)
 			if err != nil {
@@ -52,6 +42,7 @@ func runService() {
 				glog.Info("Error getting image reference url from reader")
 			}
 			imageUrl := referenceUrlBuffer.String()
+			glog.Info("Using Image: ", imageUrl)
 			urlReader, err = getUrlReader(imageUrl)
 			if err != nil {
 				glog.Info(err)
@@ -64,42 +55,31 @@ func runService() {
 				glog.Info("Error converting reader to image")
 			}
 
-			glog.Info("Saving Image")
 			scaledImage := adjustImage(img)
 
 			fileSaveLocation := IMAGE_FILENAME
 			if IS_DEBUG {
 				fileSaveLocation = DEBUG_IMAGE_FILENAME
 			}
+			glog.Info("Saving Image to ", fileSaveLocation)
 			imaging.Save(scaledImage, fileSaveLocation)
 
-			// TODO: need to convert image to png
-			// imageFile, err := os.Create(IMAGE_FILENAME)
-			// if err != nil {
-			// 	glog.Info(err)
-			// } else {
-			// 	_, err := io.Copy(imageFile, urlReader)
-			// 	if err != nil {
-			// 		glog.Info(err)
-			// 	}
-			// }
-
+			glog.Info("Done")
 		}
-		break
 	}
 
 }
 
 func main() {
+	debugFlag := flag.Bool("debug", false, "Saves the image to "+DEBUG_IMAGE_FILENAME)
 	flag.Parse()
 
-	if env_debug := os.Getenv("DEBUG"); env_debug != "" {
-		IS_DEBUG = "1" == os.Getenv("DEBUG")
-		glog.Info(IS_DEBUG)
+	glog.Info("Starting")
+	if *debugFlag {
+		IS_DEBUG = true
+		glog.Info("Debug")
 	}
 
-	glog.Info("Starting")
-	configureAccount()
 	runService()
 
 }
