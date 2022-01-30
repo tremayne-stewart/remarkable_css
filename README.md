@@ -69,6 +69,15 @@ make debug
 
 Then disconnect and reconnect WiFi to trigger a download.
 
+
+# Notes about the image loading
+There was an update to the mainline that blocks hot swapping the suspended.png. To get around this you can either
+1. Use `ddvk-hacks` which re-enables the hotswapping
+1. Run `systemctl restart xochitl` when you want to pull in the new image
+1. Restart the device.
+
+Without `ddvk-hacks`, `xochitl` needs to be relaunched in order for the new suspended.png to be loaded. Some folks have sprung up ideas about somehow tieing the relaunch to the pressing the sleep/wake button but ... eh.. 
+
 ---
 
 Dictated, not read.
