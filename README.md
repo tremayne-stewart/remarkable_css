@@ -1,4 +1,11 @@
 # Remarkable Changing Suspend Screen Service
+reMarkable service to automatically download and replace your suspend screen. No cloud needed.
+
+![](demo.jpg)
+
+
+---
+
 This was originallly a part of a larger project to control and update the suspend screen on the reMarkable 2 tablet from a web browser via a SAAS offering. 
 
 The idea was as followed.
